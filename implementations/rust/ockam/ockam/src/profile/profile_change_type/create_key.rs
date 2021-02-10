@@ -118,7 +118,7 @@ impl Profile {
     }
 
     pub(crate) fn create_key_event(
-        &mut self,
+        &self,
         key_attributes: KeyAttributes,
         attributes: Option<ProfileEventAttributes>,
         root_key: Option<&Secret>,

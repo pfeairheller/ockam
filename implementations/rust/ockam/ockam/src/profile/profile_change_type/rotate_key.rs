@@ -1,4 +1,3 @@
-use crate::profile::profile_change_history::ProfileChangeHistory;
 use crate::{
     EventIdentifier, KeyAttributes, OckamError, Profile, ProfileChange, ProfileChangeEvent,
     ProfileChangeProof, ProfileChangeType, ProfileEventAttributes, Signature, SignatureType,
@@ -87,11 +86,8 @@ impl Profile {
 
         let mut v = self.vault.lock().unwrap();
 
-        let last_key_in_chain = ProfileChangeHistory::get_secret_key_from_event(
-            &key_attributes,
-            last_event_in_chain,
-            v.deref(),
-        )?;
+        let last_key_in_chain =
+            Self::get_secret_key_from_event(&key_attributes, last_event_in_chain, v.deref())?;
 
         // TODO: Should be customisable
         let secret_attributes = SecretAttributes {

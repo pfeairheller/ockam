@@ -49,7 +49,6 @@ mod test {
             TcpConnection::create(SocketAddr::from_str("127.0.0.1:4052").unwrap()).clone();
         let mut connection = connection.lock().await;
         connection.connect().await.unwrap();
-        println!("client connected");
     }
 
     async fn listen_worker() {
@@ -59,7 +58,6 @@ mod test {
                 .unwrap();
             let mut listener = listener.lock().await;
             let _connection = listener.accept().await.unwrap();
-            println!("...listener accepted connection");
         }
     }
     #[test]

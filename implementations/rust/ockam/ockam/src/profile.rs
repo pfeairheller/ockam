@@ -24,7 +24,7 @@ pub use profile_change_type::*;
 mod profile_change_history;
 
 pub const OCKAM_NO_EVENT: &[u8] = "OCKAM_NO_EVENT".as_bytes();
-pub const PROFILE_ROOT_KEY_LABEL: &'static str = "OCKAM_PRK";
+pub const PROFILE_ROOT_KEY_LABEL: &str = "OCKAM_PRK";
 pub const OCKAM_PROFILE_VERSION: u8 = 1;
 pub const PROFILE_CHANGE_CURRENT_VERSION: u8 = 1;
 
@@ -145,7 +145,7 @@ impl Profile {
         )?;
 
         let change = ProfileChangeHistory::find_key_change_in_event(&change_event, &key_attributes)
-            .ok_or_else(|| OckamError::InvalidInternalState)?;
+            .ok_or(OckamError::InvalidInternalState)?;
         let public_key = ProfileChangeHistory::get_change_public_key(&change)?;
 
         let public_kid = v.compute_key_id_for_public_key(&public_key)?;
@@ -274,11 +274,11 @@ impl Profile {
                         serde_bare::to_vec(c.data()).map_err(|_| OckamError::BareError)?;
                     let data_hash = vault.sha256(data_binary.as_slice())?;
 
-                    if !vault
+                    if vault
                         .verify(c.self_signature(), c.data().public_key(), &data_hash)
-                        .is_ok()
+                        .is_err()
                     {
-                        false;
+                        return Err(OckamError::VerifyFailed.into());
                     }
 
                     let prev_key_event = self
@@ -288,7 +288,7 @@ impl Profile {
                         prev_key_event,
                         c.data().key_attributes(),
                     )
-                    .ok_or_else(|| OckamError::InvalidInternalState)?;
+                    .ok_or(OckamError::InvalidInternalState)?;
                     let public_key = ProfileChangeHistory::get_change_public_key(prev_key_change)?;
 
                     vault
@@ -337,7 +337,7 @@ impl Profile {
         }
 
         Ok(PublicKey::new(
-            root_create_key_change.data().public_key().to_vec().into(),
+            root_create_key_change.data().public_key().to_vec(),
         ))
     }
 }
@@ -388,7 +388,6 @@ mod test {
                 println!("{} is valid", id);
             } else {
                 println!("{} is not valid", id);
-                assert!(false);
             }
         }
     }

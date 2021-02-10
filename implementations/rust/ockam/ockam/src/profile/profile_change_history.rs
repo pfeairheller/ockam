@@ -63,7 +63,7 @@ impl ProfileChangeHistory {
             .iter()
             .rev()
             .find(|e| Self::find_key_change_in_event(e, key_attributes).is_some())
-            .ok_or(OckamError::InvalidInternalState.into())
+            .ok_or_else(|| OckamError::InvalidInternalState.into())
     }
 
     pub(crate) fn find_key_event_before(
@@ -80,7 +80,7 @@ impl ProfileChangeHistory {
             .iter()
             .rev()
             .find(|e| Self::find_key_change_in_event(e, key_attributes).is_some())
-            .ok_or(OckamError::InvalidInternalState.into())
+            .ok_or_else(|| OckamError::InvalidInternalState.into())
     }
 
     pub(crate) fn get_change_public_key(change: &ProfileChange) -> ockam_core::Result<PublicKey> {
@@ -89,7 +89,11 @@ impl ProfileChangeHistory {
             RotateKey(change) => change.data().public_key(),
         };
 
-        Ok(PublicKey::new(data.into()))
+        if data.is_empty() {
+            Err(OckamError::InvalidInternalState.into())
+        } else {
+            Ok(PublicKey::new(data.into()))
+        }
     }
 
     pub(crate) fn get_secret_key_from_event(
@@ -109,7 +113,7 @@ impl ProfileChangeHistory {
         event: &ProfileChangeEvent,
     ) -> ockam_core::Result<PublicKey> {
         let change = Self::find_key_change_in_event(event, key_attributes)
-            .ok_or_else(|| OckamError::InvalidInternalState)?;
+            .ok_or(OckamError::InvalidInternalState)?;
 
         Self::get_change_public_key(change)
     }

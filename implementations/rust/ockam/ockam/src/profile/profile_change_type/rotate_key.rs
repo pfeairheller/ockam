@@ -79,7 +79,7 @@ impl Profile {
         attributes: Option<ProfileEventAttributes>,
         root_key: &Secret,
     ) -> ockam_core::Result<ProfileChangeEvent> {
-        let attributes = attributes.unwrap_or(ProfileEventAttributes::new());
+        let attributes = attributes.unwrap_or_default();
 
         let prev_event_id = self.change_history.get_last_event_id()?;
 
@@ -113,7 +113,7 @@ impl Profile {
         let profile_change = ProfileChange::new(
             PROFILE_CHANGE_CURRENT_VERSION,
             prev_event_id,
-            attributes.clone(),
+            attributes,
             ProfileChangeType::RotateKey(change),
         );
         let changes = vec![profile_change];
